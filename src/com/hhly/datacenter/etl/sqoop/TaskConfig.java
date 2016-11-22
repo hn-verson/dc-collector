@@ -5,6 +5,7 @@ package com.hhly.datacenter.etl.sqoop;
  */
 public interface TaskConfig {
 
+    /** 任务类型列表 */
     String IMPORT_TYPE = "import";
     String CLEAN_TYPE = "clean";
     String EXPORT_TYPE = "export";
@@ -14,11 +15,5 @@ public interface TaskConfig {
      * @return
      */
     boolean isValidate();
-
-    /**
-     * 任务配置唯一标识
-     * @return
-     */
-    String getSystemId();
 
 }

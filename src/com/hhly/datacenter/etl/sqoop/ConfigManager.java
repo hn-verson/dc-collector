@@ -1,10 +1,9 @@
 package com.hhly.datacenter.etl.sqoop;
 
 import com.hhly.datacenter.startup.Bootstrap;
+import com.hhly.datacenter.util.DomUtil;
 import com.hhly.datacenter.util.ReflectUtil;
-import org.jdom2.Document;
 import org.jdom2.Element;
-import org.jdom2.input.SAXBuilder;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.*;
@@ -16,7 +15,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class ConfigManager {
 
     private static String configLocation;
-    private static ConcurrentHashMap<String,TaskConfig> taskConfigMap = new ConcurrentHashMap<>();
+    protected static ConcurrentHashMap<String,TaskConfig> taskConfigMap = new ConcurrentHashMap<>();
 
     static {
         init();
@@ -32,7 +31,7 @@ public class ConfigManager {
             for (File f : fileList) {
                 if (!f.getName().endsWith(".xml"))
                     continue;
-                parse(f.getAbsolutePath());
+                createConfig(f.getAbsolutePath());
             }
         }
 
@@ -42,20 +41,23 @@ public class ConfigManager {
     }
 
     private static void setConfigLocation(){
-        configLocation = Bootstrap.getCollectorHome() + File.separator + "conf/task" ;
+        configLocation = Bootstrap.getCollectorHome() + File.separator + "conf" + File.separator + "task" ;
     }
 
-    private static void parse(String absolutePath){
-        SAXBuilder builder = new SAXBuilder();
+    private static void createConfig(String path){
+
+        Element root = DomUtil.getRootElement(path);
+        if (root == null)
+            return;
+
         TaskConfig taskConfig;
+
         try {
 
-            Document document = builder.build(absolutePath);
-            Element root = document.getRootElement();
-            Element taskTypeElement = root.getChild("type");
+            Element taskTypeElement = DomUtil.getChild(root,"type");
             if (taskTypeElement == null)
-                //TODO
                 return;
+
             String taskType = taskTypeElement.getText();
 
             if (TaskConfig.IMPORT_TYPE.equals(taskType))
@@ -65,23 +67,37 @@ public class ConfigManager {
             else if (TaskConfig.EXPORT_TYPE.equals(taskType))
                 taskConfig = (TaskConfig)Class.forName(TaskType.EXPORT.getTaskConfigClazz()).newInstance();
             else
-                //TODO
                 return;
 
-            for (Element child : root.getChildren()) {
+            for (Element child : root.getChildren())
                 ReflectUtil.setProperty(taskConfig,child.getName(),child.getText());
-            }
 
             if (taskConfig.isValidate())
-                taskConfigMap.put(taskConfig.getSystemId(),taskConfig);
+                taskConfigMap.put(path,taskConfig);
 
         } catch (Exception e) {
             //TODO
         }
+
     }
 
-    private static void removeConfig(String key){
-        taskConfigMap.remove(key);
+    private static void modifyConfig(String path){
+
+        Element root = DomUtil.getRootElement(path);
+        if (root == null)
+            return;
+
+        TaskConfig taskConfig = taskConfigMap.get(path);
+        if (taskConfig == null)
+            return;
+
+        for (Element child : root.getChildren())
+            ReflectUtil.setProperty(taskConfig,child.getName(),child.getText());
+
+    }
+
+    private static void removeConfig(String path){
+        taskConfigMap.remove(path);
     }
 
     private static class TaskConfigDirectoryWatcher{
@@ -89,9 +105,20 @@ public class ConfigManager {
         protected static void startWatching(){
 
             try {
-                WatchService watcher = FileSystems.getDefault().newWatchService();
+                final WatchService watcher = FileSystems.getDefault().newWatchService();
                 Path path = Paths.get(ConfigManager.configLocation);
                 path.register(watcher, StandardWatchEventKinds.ENTRY_CREATE, StandardWatchEventKinds.ENTRY_DELETE, StandardWatchEventKinds.ENTRY_MODIFY);
+
+                //release resource
+                Runtime.getRuntime().addShutdownHook(new Thread() {
+                    public void run() {
+                        try {
+                            watcher.close();
+                        } catch (IOException e) {
+                            //NOOP
+                        }
+                    }
+                });
 
                 while (true) {
 
@@ -106,15 +133,22 @@ public class ConfigManager {
 
                         WatchEvent.Kind<?> kind = event.kind();
                         WatchEvent<Path> ev = (WatchEvent<Path>) event;
-                        Path absolutePath = ev.context().toAbsolutePath();
+                        String fileName = ev.context().toString();
+
+                        if (!fileName.endsWith(".xml"))
+                            continue;
 
                         if (kind == StandardWatchEventKinds.OVERFLOW)
                             continue;
 
-                        if (kind == StandardWatchEventKinds.ENTRY_CREATE || kind == StandardWatchEventKinds.ENTRY_MODIFY)
-                            ConfigManager.parse(absolutePath.toString());
+                        String absolutePath = ConfigManager.configLocation + File.separator + fileName;
+
+                        if (kind == StandardWatchEventKinds.ENTRY_CREATE)
+                            ConfigManager.createConfig(absolutePath);
+                        else if(kind == StandardWatchEventKinds.ENTRY_MODIFY)
+                            ConfigManager.modifyConfig(absolutePath);
                         else if (kind == StandardWatchEventKinds.ENTRY_DELETE)
-                            ConfigManager.removeConfig(absolutePath.toString());
+                            ConfigManager.removeConfig(absolutePath);
 
                     }
 

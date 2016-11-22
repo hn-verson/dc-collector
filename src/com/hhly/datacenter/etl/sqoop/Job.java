@@ -10,7 +10,7 @@ public class Job implements Runnable {
 
     private String jobId = UUID.randomUUID().toString();
     private JobState state = JobState.NEW;
-    private Stack<Task> stack = new Stack<Task>();
+    private Stack<Task> stack = new Stack<>();
 
     protected enum JobState{
         NEW,RUNNING,SUCCESS,FAILURE
