@@ -1,0 +1,10 @@
+<component name="libraryTable">
+  <library name="sqoop">
+    <CLASSES>
+      <root url="jar://D:/install_file/dev/package/ojdbc6.jar!/" />
+      <root url="jar://D:/install_file/dev/package/sqoop-1.4.6.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

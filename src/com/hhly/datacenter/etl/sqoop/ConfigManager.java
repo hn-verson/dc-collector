@@ -15,7 +15,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class ConfigManager {
 
     private static String configLocation;
-    private static ConcurrentHashMap<String,TaskConfig> taskConfigMap = new ConcurrentHashMap<>();
+    protected static ConcurrentHashMap<String,TaskConfig> taskConfigMap = new ConcurrentHashMap<>();
 
     static {
         init();
