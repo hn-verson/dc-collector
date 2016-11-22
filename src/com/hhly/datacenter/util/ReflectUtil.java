@@ -32,9 +32,6 @@ public class ReflectUtil {
 
     }
 
-    /**
-     * Reverse of Introspector.decapitalize
-     */
     public static String capitalize(String name) {
         if (name == null || name.length() == 0) {
             return name;

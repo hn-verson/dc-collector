@@ -1,6 +1,7 @@
 package com.hhly.datacenter.etl.sqoop;
 
 import com.hhly.datacenter.util.StringUtil;
+import java.util.StringTokenizer;
 
 /**
  * Created by Verson on 2016/11/19.
@@ -23,6 +24,11 @@ public class SyncTaskConfig extends TaskConfigBase {
     private String query;
 
     /**
+     * 查询参数列表
+     */
+    private String[] queryParams;
+
+    /**
      * 目标表名称
      */
     private String targetTable;
@@ -37,21 +43,6 @@ public class SyncTaskConfig extends TaskConfigBase {
      * example: srcFieldType1=destFieldType1,srcFieldType2=destFieldType2
      */
     private String columnTypeMap;
-
-    /**
-     * 抽取数据的起始时间
-     */
-    private String startDate;
-
-    /**
-     * 抽取数据的截止时间
-     */
-    private String endDate;
-
-    /**
-     * 是否增量，默认为增量
-     */
-    private boolean isIncrement = true;
 
     @Override
     public boolean isValidate(){
@@ -112,28 +103,18 @@ public class SyncTaskConfig extends TaskConfigBase {
         this.columnTypeMap = columnTypeMap;
     }
 
-    public String getStartDate() {
-        return startDate;
+    public String[] getQueryParams() {
+        return queryParams;
     }
 
-    public void setStartDate(String startDate) {
-        this.startDate = startDate;
-    }
+    public void setQueryParams(String queryParams) {
+        StringTokenizer tokenizer = new StringTokenizer(queryParams.trim(),",");
+        int index = 0;
+        this.queryParams = new String[tokenizer.countTokens()];
 
-    public String getEndDate() {
-        return endDate;
-    }
-
-    public void setEndDate(String endDate) {
-        this.endDate = endDate;
-    }
-
-    public boolean isIncrement() {
-        return isIncrement;
-    }
-
-    public void setIncrement(boolean increment) {
-        isIncrement = increment;
+        while (tokenizer.hasMoreElements()) {
+            this.queryParams[index++] = tokenizer.nextElement().toString();
+        }
     }
 
 }

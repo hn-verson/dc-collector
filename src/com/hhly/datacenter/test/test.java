@@ -9,12 +9,8 @@ import java.util.UUID;
  */
 public class test {
     public static void main(String args[]) throws Exception{
-        StringTokenizer tokenizer = new StringTokenizer("verson,sharon,jettyk,andrea",",");
-        System.out.println(tokenizer.countTokens());
 
-        while (tokenizer.hasMoreElements()) {
-            System.out.println(tokenizer.nextElement());
-        }
+        Class.forName("com.hhly.datacenter.etl.sqoop.ConfigManager");
 
     }
 }

@@ -18,20 +18,11 @@
 <!-- The contents of this file will be loaded for each web application -->
 <Configuration>
 
-    <!--  应用标识 -->
-    <appId>100</appId>
+    <!--  任务类型 -->
+    <type>import</type>
 
-    <!--  任务分组 -->
-    <groupId>100</groupId>
-
-    <!--  任务标识 -->
-    <taskId>1001001001</taskId>
-
-    <!-- 是否存在依赖 -->
-    <isDependency>false</isDependency>
-
-    <!-- 依赖任务列表 -->
-    <dependencyTaskIds></dependencyTaskIds>
+    <!-- 依赖任务文件列表 -->
+    <dependencyTasks></dependencyTasks>
 
     <!-- 数据源JNDI -->
     <srcNaming>traffic</srcNaming>
@@ -60,6 +51,9 @@
             AND access_time >= TO_DATE('${endDate}','YYYY-MM-DD HH24:MI:SS')
     </query>
 
+    <!-- 查询参数列表，与占位符保持一致 -->
+    <queryParams>startDate,endDate</queryParams>
+
     <!-- 目标库JNDI -->
     <destNaming>data-warehouse</destNaming>
 
@@ -71,8 +65,5 @@
 
     <!-- 字段类型映射 -->
     <columnTypeMap></columnTypeMap>
-
-    <!--  是否增量方式同步 -->
-    <isIncrement>true</isIncrement>
 
 </Configuration>
