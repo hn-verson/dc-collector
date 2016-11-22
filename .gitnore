@@ -1,7 +1,0 @@
-.gitnore
-.idea/*
-lib/*
-*.jar
-logs/*
-out/*
-dc-collector.iml
