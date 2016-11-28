@@ -15,6 +15,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class ConfigManager {
 
     private static String configLocation;
+    private static String fileSuffix = ".xml";
     protected static ConcurrentHashMap<String,TaskConfig> taskConfigMap = new ConcurrentHashMap<>();
 
     static {
@@ -29,9 +30,10 @@ public class ConfigManager {
         if (taskConfigDir.exists() && taskConfigDir.isDirectory()) {
             File[] fileList = taskConfigDir.listFiles();
             for (File f : fileList) {
-                if (!f.getName().endsWith(".xml"))
+                String fileName = f.getName();
+                if (!fileName.endsWith(fileSuffix) || fileName.length() <= fileSuffix.length())
                     continue;
-                createConfig(f.getAbsolutePath());
+                createConfig(fileName);
             }
         }
 
@@ -40,13 +42,29 @@ public class ConfigManager {
 
     }
 
+    public static boolean isExistConfig(String fileName){
+        return taskConfigMap.contains(fileName);
+    }
+
+    public static TaskConfig getTaskConfig(String fileName){
+        return taskConfigMap.get(fileName);
+    }
+
     private static void setConfigLocation(){
         configLocation = Bootstrap.getCollectorHome() + File.separator + "conf" + File.separator + "task" ;
     }
 
-    private static void createConfig(String path){
+    private static String getConfigLocation(){
+        return configLocation;
+    }
 
-        Element root = DomUtil.getRootElement(path);
+    private static String getAbsolutePath(String fileName){
+        return configLocation + File.separator + fileName;
+    }
+
+    private static void createConfig(String fileName){
+
+        Element root = DomUtil.getRootElement(getAbsolutePath(fileName));
         if (root == null)
             return;
 
@@ -73,7 +91,7 @@ public class ConfigManager {
                 ReflectUtil.setProperty(taskConfig,child.getName(),child.getText());
 
             if (taskConfig.isValidate())
-                taskConfigMap.put(path,taskConfig);
+                taskConfigMap.put(fileName,taskConfig);
 
         } catch (Exception e) {
             //TODO
@@ -81,13 +99,13 @@ public class ConfigManager {
 
     }
 
-    private static void modifyConfig(String path){
+    private static void modifyConfig(String fileName){
 
-        Element root = DomUtil.getRootElement(path);
+        Element root = DomUtil.getRootElement(getAbsolutePath(fileName));
         if (root == null)
             return;
 
-        TaskConfig taskConfig = taskConfigMap.get(path);
+        TaskConfig taskConfig = taskConfigMap.get(fileName);
         if (taskConfig == null)
             return;
 
@@ -96,8 +114,8 @@ public class ConfigManager {
 
     }
 
-    private static void removeConfig(String path){
-        taskConfigMap.remove(path);
+    private static void removeConfig(String fileName){
+        taskConfigMap.remove(getAbsolutePath(fileName));
     }
 
     private static class TaskConfigDirectoryWatcher{
@@ -141,14 +159,12 @@ public class ConfigManager {
                         if (kind == StandardWatchEventKinds.OVERFLOW)
                             continue;
 
-                        String absolutePath = ConfigManager.configLocation + File.separator + fileName;
-
                         if (kind == StandardWatchEventKinds.ENTRY_CREATE)
-                            ConfigManager.createConfig(absolutePath);
+                            ConfigManager.createConfig(fileName);
                         else if(kind == StandardWatchEventKinds.ENTRY_MODIFY)
-                            ConfigManager.modifyConfig(absolutePath);
+                            ConfigManager.modifyConfig(fileName);
                         else if (kind == StandardWatchEventKinds.ENTRY_DELETE)
-                            ConfigManager.removeConfig(absolutePath);
+                            ConfigManager.removeConfig(fileName);
 
                     }
 

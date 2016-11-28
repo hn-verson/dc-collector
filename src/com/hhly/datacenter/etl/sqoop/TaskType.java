@@ -5,16 +5,18 @@ package com.hhly.datacenter.etl.sqoop;
  */
 public enum TaskType {
 
-    IMPORT("import",SyncTaskConfig.class),
-    CLEAN("clean",SyncTaskConfig.class),
-    EXPORT("export",SyncTaskConfig.class);
+    IMPORT(TaskConfig.IMPORT_TYPE,ImportTaskConfig.class,ImportHandler.class),
+    CLEAN(TaskConfig.CLEAN_TYPE,CleanTaskConfig.class,CleanHandler.class),
+    EXPORT(TaskConfig.EXPORT_TYPE,ExportTaskConfig.class,ExportHandler.class);
 
     private String type;
     private Class taskConfigClazz;
+    private Class taskHandlerClazz;
 
-    TaskType(String type,Class taskConfigClazz) {
+    TaskType(String type,Class taskConfigClazz,Class taskHandlerClazz) {
         this.type = type;
         this.taskConfigClazz = taskConfigClazz;
+        this.taskHandlerClazz = taskHandlerClazz;
     }
 
     public String getType(){
@@ -23,6 +25,10 @@ public enum TaskType {
 
     public String getTaskConfigClazz() {
         return taskConfigClazz.getCanonicalName();
+    }
+
+    public Class getTaskHandlerClazz() {
+        return taskHandlerClazz;
     }
 
 }

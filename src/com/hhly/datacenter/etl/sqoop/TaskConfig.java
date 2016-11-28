@@ -16,4 +16,10 @@ public interface TaskConfig {
      */
     boolean isValidate();
 
+    /**
+     * 获取任务配置类型
+     * @return
+     */
+    String getType();
+
 }

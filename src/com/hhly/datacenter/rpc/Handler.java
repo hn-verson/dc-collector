@@ -5,6 +5,6 @@ package com.hhly.datacenter.rpc;
  */
 public interface Handler {
 
-    void handle(Request req,Response res);
+    void process(Request req,Response res);
 
 }

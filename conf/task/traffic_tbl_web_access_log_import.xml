@@ -21,6 +21,9 @@
     <!--  任务类型 -->
     <type>import</type>
 
+    <!-- 是否增量同步 -->
+    <isIncrement>false</isIncrement>
+
     <!-- 依赖任务文件列表 -->
     <dependencyTasks></dependencyTasks>
 
@@ -51,11 +54,14 @@
             AND access_time >= TO_DATE('${endDate}','YYYY-MM-DD HH24:MI:SS')
     </query>
 
+    <!-- 切分字段 -->
+    <splitField>access_time</splitField>
+
     <!-- 查询参数列表，与占位符保持一致 -->
-    <queryParams>startDate,endDate</queryParams>
+    <params>startDate,endDate</params>
 
     <!-- 目标库JNDI -->
-    <destNaming>data-warehouse</destNaming>
+    <destNaming>data_warehouse</destNaming>
 
     <!-- 目标表名称 -->
     <targetTable>tbl_web_access_log</targetTable>
@@ -65,5 +71,11 @@
 
     <!-- 字段类型映射 -->
     <columnTypeMap></columnTypeMap>
+
+    <!-- 分区方式(year,month,day) -->
+    <partitionWay>month</partitionWay>
+
+    <!-- 分区字段 -->
+    <partitionFields>p_month</partitionFields>
 
 </Configuration>
